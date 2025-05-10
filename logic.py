@@ -9,7 +9,7 @@ def saveEntryToCsv(entry: JournalEntry) -> None:
     """Saves the journal entry to the CSV."""
     with open(csvFile, mode="a", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
-        writer.writerow([entry.title, entry.content, entry.time.strftime('%m-%d-%Y %H:%M')])
+        writer.writerow([entry.title, entry.content, entry.time.strftime('%m-%d-%Y %I:%M %p')])
 def loadEntriesFromCsv() -> List[JournalEntry]:
     """Loads the journal entries from the CSV."""
     entries = []
@@ -19,7 +19,7 @@ def loadEntriesFromCsv() -> List[JournalEntry]:
             for row in reader:
                 if len(row) == 3:
                     title, content, timeStr = row
-                    time = datetime.strptime(timeStr, '%m-%d-%Y %H:%M')
+                    time = datetime.strptime(timeStr, '%m-%d-%Y %I:%M %p')
                     entry = JournalEntry(title=title, content=content, time=time)
                     entries.append(entry)
                 else:
@@ -27,9 +27,10 @@ def loadEntriesFromCsv() -> List[JournalEntry]:
     except FileNotFoundError:
         pass
     return entries
-def overwriteAllEntries(entries):
-    """Overwrites the journal entries to the CSV."""
-    with open("journal_entries.csv", "w", newline="") as file:
+def updateEntriesToCSV(entries):
+    """Edits the journal entries to the CSV."""
+    with open("entries.csv", "w", newline="") as file:
         writer = csv.writer(file)
         for entry in entries:
-            writer.writerow([entry.time, entry.title, entry.content])
+            writer.writerow([entry.title, entry.content, entry.time.strftime('%m-%d-%Y %I:%M %p')])
+

@@ -6,7 +6,7 @@ from datetime import datetime
 from logic import (
     saveEntryToCsv,
     loadEntriesFromCsv,
-    overwriteAllEntries,
+    updateEntriesToCSV,
 )
 
 class JournalApp:
@@ -35,28 +35,32 @@ class JournalApp:
     def run(self) -> None:
         """Runs the Tkinter main loop."""
         self.root.mainloop()
+
     def saveEntry(self) -> None:
         """Saves a new journal entry to the CSV file."""
         title = self.entryTitle.get().strip()
         entryText = self.entryText.get("1.0", END).strip()
+
+        if not title:
+            messagebox.showwarning("Invalid", "Enter a title")
+            return
+
+        if not self.validateEntry(entryText):
+            messagebox.showwarning("Invalid", "Enter an entry")
+            return
+
         entry = JournalEntry(title=title, content=entryText)
         saveEntryToCsv(entry)
         self.entryTitle.delete(0, END)
         self.entryText.delete("1.0", END)
         messagebox.showinfo("Saved", "Successful")
-        if not title:
-            messagebox.showwarning("Invalidd", "Enter a title.")
-            return
 
-        if not self.validateEntry(entryText):
-            messagebox.showwarning("Invalid", "Enter text.")
-            return
     def showEntries(self) -> None:
         """New window for viewing, editing, and searching."""
         try:
             self.entries = loadEntriesFromCsv()
             if not self.entries:
-                messagebox.showinfo("No Entries", "No previous entries found.")
+                messagebox.showinfo("No Entries", "No previous entries found")
                 return
             def formatEntry(index: int, entry: JournalEntry) -> str:
                 time = entry.time.strftime('%m-%d-%Y %I:%M %p')
@@ -64,7 +68,7 @@ class JournalApp:
             def displayEntries(entries: list[JournalEntry]) -> None:
                 textArea.delete(1.0, END)
                 if not entries:
-                    textArea.insert(END, "No matching entries found.\n")
+                    textArea.insert(END, "No matching entries found\n")
                     return
                 for i, entry in enumerate(entries, 1):
                     entryText = formatEntry(i, entry)
@@ -87,7 +91,7 @@ class JournalApp:
                     self.editEntry(index)
                     top.destroy()
                 except Exception:
-                    messagebox.showerror("Invalid", "Needs a valid entry number.")
+                    messagebox.showerror("Invalid", "Input a valid entry number")
 
             mainWindowX = self.root.winfo_x()
             mainWindowY = self.root.winfo_y()
@@ -128,11 +132,11 @@ class JournalApp:
 
             if self.validateEntry(newContent):
                 self.entries[index].content = newContent
-                overwriteAllEntries(self.entries)
+                updateEntriesToCSV(self.entries)
                 messagebox.showinfo("Updated", "Successful")
                 editWindow.destroy()
             else:
-                messagebox.showwarning("Invalid", "Can't save an empty entry.")
+                messagebox.showwarning("Invalid", "Cannot save an empty entry")
 
         saveBtn = tk.Button(editWindow, text="Save Changes", command=saveEdit)
         saveBtn.pack(pady=5)
